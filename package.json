@@ -1,0 +1,22 @@
+{
+  "name": "structron",
+  "version": "0.1.0",
+  "description": "A reader and validator for binary data structures",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LordVonAdel/structron.git"
+  },
+  "keywords": [
+    "Struct"
+  ],
+  "author": "LordVonAdel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LordVonAdel/structron/issues"
+  },
+  "homepage": "https://github.com/LordVonAdel/structron#readme"
+}
