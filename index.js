@@ -1,3 +1,5 @@
+const Report = require('./Report.js');
+
 class Struct {
 
   /**
@@ -8,6 +10,7 @@ class Struct {
     this.members = [];
     this.arrays = [];
     this.references = [];
+    this.rules = [];
     this.name = name;
   }
 
@@ -18,6 +21,8 @@ class Struct {
    * @returns {Struct}
    */
   addMember(type, name) {
+    if (isNaN(type.SIZE)) throw new Error("Element with no fixed size is not allowed as struct member (" + name + ")!",);
+
     this.members.push({type, name});
     return this;
   }
@@ -26,8 +31,8 @@ class Struct {
    * Adds a an array to load from values inside this struct. The order is not important
    * @param {Type} type Datatype of the member to load
    * @param {String} name Name of the member
-   * @param {String} offsetMemberName Name of the member which stores the address of the array
-   * @param {String} countMemberName Name of the member which stores the length of the array
+   * @param {any} offsetMemberName Number or Name of the member which stores the address of the array
+   * @param {any} countMemberName Number or name of the member which stores the length of the array
    * @param {Boolean} relative Is the address in the target member relative to the structs address?
    * @returns {Struct}
    */
@@ -61,39 +66,99 @@ class Struct {
   }
 
   /**
+   * Adds a rule. Rules give extra validation options
+   * @returns {Struct} itself
+   */
+  addRule(rule) {
+    this.rules.push({
+      rule
+    });
+    return this;
+  }
+
+  /**
    * Converts a buffer to an object with the structs structure
    * @param {Buffer} buffer Buffer to read from
-   * @param {=Number} offset Offset i bytes to start reading from
+   * @param {=Number} offset Offset byte to start reading from
    */
-  import(buffer, offset = 0) {
+  read(buffer, offset = 0, report = null) {
     let data = {};
     let address = offset;
     for (let member of this.members) {
-      data[member.name] = member.type.import(buffer, address);
+      data[member.name] = member.type.read(buffer, address, report);
       address += member.type.SIZE;
     }
 
     for (let array of this.arrays) {
-      let arrayOffset = data[array.offsetMemberName];
-      let arrayCount = data[array.countMemberName];
+      let arrayOffset = (typeof array.offsetMemberName == 'string') ? data[array.offsetMemberName] : array.offsetMemberName;
+      let arrayCount = (typeof array.offsetMemberName == 'string') ? data[array.countMemberName] : array.countMemberName;
+
       if (array.relative) arrayOffset += offset;
 
       let arr = [];
       for (let i = 0; i < arrayCount; i++) {
         arr.push(
-          array.type.import(buffer, arrayOffset + i * array.type.SIZE)
+          array.type.read(buffer, arrayOffset + i * array.type.SIZE, report)
         );
       }
+
+      // Does double mark some fields that are only read ones :/
+      report.markAreaAsRead(arrayOffset, arrayCount * array.type.SIZE);
+
       data[array.name] = arr;
+
+      if (report) {
+        report.arrays.push({
+          name: array.name,
+          start: arrayOffset, 
+          count: arrayCount, 
+          length: arrayCount * array.type.SIZE
+        });
+      }
     }
 
     for (let reference of this.references) {
       let referenceOffset = data[reference.memberName];
       if (reference.relative) referenceOffset += offset;
-      data[reference.name] = reference.type.import(buffer, referenceOffset);
+      data[reference.name] = reference.type.read(buffer, referenceOffset, report);
+    }
+
+    for (let rule of this.rules) {
+      let response = rule.rule(data, buffer);
+      if (response) {
+        report.errors.push(response);
+      }
+    }
+
+    if (report) {
+      report.markAreaAsRead(offset, this.SIZE)
     }
 
     return data;
+  }
+
+  /**
+   * backward compatibility. Use .read instead! 
+   */
+  import() {
+    this.read(...arguments);
+  }
+
+  /**
+   * Returns an report object. It will contain the extracted data as well as some statistics like how many bytes were read and what errors occoured.
+   * @param {*} buffer Buffer to read from
+   * @param {*} offset Offset byte to start reading from
+   * @returns {Report} The report
+   */
+  report(buffer, offset) {
+    let report = new Report({
+      monitorUsage: true
+    }, buffer);
+    report.data = this.read(buffer, offset, report);
+
+    report.checkForArrayCollisions();
+
+    return report;
   }
 
   /**
@@ -104,7 +169,7 @@ class Struct {
    */
   validate(buffer, offset = 0) {
     try {
-      this.import(buffer, offset)
+      this.read(buffer, offset)
       return true;
     } catch (e) {
       return false;
@@ -126,118 +191,7 @@ class Struct {
 
 }
 
-Struct.TYPES = {
-  /* 
-   * Signed 4 byte LE Integer 
-   */
-  INT: {
-    import(buffer, offset) {
-      return buffer.readInt32LE(offset)
-    },
-    SIZE: 4
-  },
-
-  /**
-   * Unsigned 4 byte LE integer
-   */
-  UINT: {
-    import(buffer, offset) {
-      return buffer.readUInt32LE(offset)
-    },
-    SIZE: 4
-  },
-
-  /**
-   * Unsigned 16 bit LE integer
-   */
-  USHORT: {
-    import(buffer, offset) {
-      return buffer.readUInt16LE(offset)
-    },
-    SIZE: 2
-  },
-
-  /**
-   * Signed 16 bit LE integer
-   */
-  SHORT: {
-    import(buffer, offset) {
-      return buffer.readInt16LE(offset)
-    },
-    SIZE: 2
-  },
-
-  /**
-   * 4 Byte LE float
-   */
-  FLOAT: {
-    import(buffer, offset) {
-      return buffer.readFloatLE(offset)
-    },
-    SIZE: 4
-  },
-
-  /**
-   * 1 Byte char
-   */
-  CHAR: {
-    import(buffer, offset) {
-      return buffer.readUInt8(offset)
-    },
-    SIZE: 1
-  },
-
-  /**
-   * Unsigned 8 bit int
-   */
-  BYTE: {
-    import(buffer, offset) {
-      return buffer.readUInt8(offset)
-    },
-    SIZE: 1
-  },
-
-  /**
-   * String with fixed Length
-   * @param {Number} length Length to read
-   * @param {=String} encoding Codec to use. Anything that is supported by buffer.toString()
-   */
-  STRING(length, encoding = "ascii") {
-    return {
-      import(buffer, offset) {
-        return buffer.toString(encoding, offset, offset + length).replace(/\0/g, '');
-      },
-      SIZE: length
-    }
-  },
-
-  /**
-   * Null terminated string
-   * @param {=String} encoding Codec to use. Anything that is supported by buffer.toString()
-   */
-  NULL_TERMINATED_STRING(encoding = "ascii") {
-    return {
-      import(buffer, offset) {
-        let len = 0;
-        while (buffer.readUInt8(offset + len) != 0) {
-          len++;
-        }
-        return buffer.toString(encoding, offset, offset + len)
-      },
-      SIZE: NaN
-    }
-  },
-
-  /**
-   * Skips a given amount of bytes
-   * @param {Number} length Number of bytes to skip
-   */
-  SKIP(length) {
-    return {
-      import() { return null },
-      SIZE: length
-    }
-  }
-}
+Struct.TYPES = require('./types.js');
+Struct.RULES = require('./rules.js');
 
 module.exports = Struct;

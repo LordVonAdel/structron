@@ -38,7 +38,7 @@ const Dimensions = new Struct()
 
 // Define via custom function
 const rgb565 = {
-  import(buffer, offset) {
+  read(buffer, offset) {
     let short = buffer.readUInt16LE(offset);
     return {
       r: short & 0b1111100000000000 >> 11,
@@ -67,10 +67,10 @@ const Image = new Struct()
 // --- And now import our image ---
 const data = Buffer.from("mRkBJAQAAAAEAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAhKjM8RU5XYGlye4SNlp+osbrDzNXe5/D5AwwVHicwOUJLVF1mb3iBipOcpa63wMlUaW5hAA==", "base64");
 
-let image = Image.import(data);
-console.log(image);
+let image = Image.report(data);
+console.log(image.data);
 ```
-`image` will then look like this:
+`image.data` will then look like this:
 ```json
 {
   "magicNumber": 604051865,
@@ -108,7 +108,31 @@ Reads data from a buffer from a specific address on. Returns the data as object.
 ### `struct.validate(buffer, offset)`
 Returns an boolean if the data matches the struct.
 
+### `struct.addMember(type, name)`
+Adds an member to the struct definition.
+
+### `struct.addArray(type, name, index, length, relative)`
+`type` is the type of the elements in the array. To work, the size of the elements need to be correct.
+
+`name` is the name of the member that will be added to the output object containing the array.
+
+`index` is the start address of the array. If a string is given, it will read the value from another member with that name.
+
+`length` is the number of elements in the array. (Not the size in bytes!). If a string is given, it will read the value from another member with that name.
+
+When `relative` is set to true, the array will be read from the index + the structs address.
+
+### `struct.addReference(type, name, index, relative)`
+`type` is the type of the object to reference.
+
+`name` is the name of the member that will be added to the output object.
+
+`index` is the start address of the elementto load. If a string is given, it will read the value from another member with that name.
+
+When `relative` is set to true, the index is relative to the start of the parent struct.
+
 ## Inbuilt Types
+These inbuilt types are accesiable with `Structron.TYPES.`
 
 ### `INT`
 4 byte signed little-endian Integer

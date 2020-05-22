@@ -1,6 +1,6 @@
 {
   "name": "structron",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A reader and validator for binary data structures",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,10 @@
     "url": "git+https://github.com/LordVonAdel/structron.git"
   },
   "keywords": [
-    "Struct"
+    "Struct",
+    "Binary",
+    "Buffer",
+    "Parse"
   ],
   "author": "LordVonAdel",
   "license": "ISC",
