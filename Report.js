@@ -38,7 +38,7 @@ class Report {
         if (a1 == a2) continue;
         if (a1.start == a2.start) continue;
 
-        if ((a1.start + a1.length) > a2.start) {
+        if (a1.start < (a2.start + a2.length) && a2.start < (a1.start + a1.length)) {
           this.errors.push("Array " + a1.name + " overlaps with " + a2.name);
         }
       }
@@ -57,7 +57,7 @@ class Report {
     out += "\n Number of arrays: " + this.arrays.length;
 
     if (this.errors.length) {
-      out += "\n Errors (" + this.errors.length + "):\n"
+      out += "\n Errors (" + this.errors.length + "):\n  "
       + this.errors.join("\n  ");
     } else {
       out += "\n No errors were found."
