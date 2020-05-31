@@ -97,6 +97,9 @@ module.exports = {
         let len = 0;
         while (buffer.readUInt8(offset + len) != 0) {
           len++;
+          if (len >= buffer.length) {
+            throw new Error("Null terminated string went outside buffer!");
+          }
         }
 
         // Also report last byte as used information

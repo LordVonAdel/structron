@@ -84,10 +84,14 @@ class Struct {
   read(buffer, offset = 0, report = null) {
     let data = {};
     let address = offset;
+    let path = report.path;
+
     for (let member of this.members) {
+      report.path = path + "." + member.name;
       data[member.name] = member.type.read(buffer, address, report);
       address += member.type.SIZE;
     }
+
 
     for (let array of this.arrays) {
       let arrayOffset = (typeof array.offsetMemberName == 'string') ? data[array.offsetMemberName] : array.offsetMemberName;
@@ -97,12 +101,13 @@ class Struct {
 
       let arr = [];
       for (let i = 0; i < arrayCount; i++) {
+        report.path = path + "." + array.name + "[" + i + "]";
         arr.push(
           array.type.read(buffer, arrayOffset + i * array.type.SIZE, report)
         );
       }
 
-      // Does double mark some fields that are only read ones :/
+      // Does double mark some fields that are only read once :/
       report.markAreaAsRead(arrayOffset, arrayCount * array.type.SIZE);
 
       data[array.name] = arr;
@@ -112,21 +117,30 @@ class Struct {
           name: array.name,
           start: arrayOffset, 
           count: arrayCount, 
-          length: arrayCount * array.type.SIZE
+          length: arrayCount * array.type.SIZE,
+          path: path + "." + array.name
         });
       }
     }
 
     for (let reference of this.references) {
-      let referenceOffset = data[reference.memberName];
-      if (reference.relative) referenceOffset += offset;
-      data[reference.name] = reference.type.read(buffer, referenceOffset, report);
+      report.path = path + "." + reference.name;
+
+      try {
+        let referenceOffset = data[reference.memberName];
+        if (reference.relative) referenceOffset += offset;
+        data[reference.name] = reference.type.read(buffer, referenceOffset, report);
+      } catch (e) {
+        report.addError(e.message);
+      }
     }
 
-    for (let rule of this.rules) {
+    for (let i = 0; i < this.rules.length; i++) {
+      let rule = this.rules[i];
       let response = rule.rule(data, buffer);
       if (response) {
-        report.errors.push(response);
+        report.path = path + ":rule[" + i + "]";
+        report.addError(response);
       }
     }
 

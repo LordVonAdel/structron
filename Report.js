@@ -15,8 +15,18 @@ class Report {
       this.usageBuffer = Buffer.alloc(buffer.length);
     }
 
+    // Path to the current read entry
+    this.path = "root";
+
     this.errors = [];
     this.arrays = [];
+  }
+
+  addError(message) {
+    this.errors.push({
+      path: this.path,
+      message
+    });
   }
 
   markAreaAsRead(start, length) {
@@ -35,11 +45,13 @@ class Report {
       for (let j = i; j < this.arrays.length; j++) {
         let a2 = this.arrays[j];
 
+        if (a1.length == 0 || a2.length == 0) continue;
         if (a1 == a2) continue;
         if (a1.start == a2.start) continue;
 
         if (a1.start < (a2.start + a2.length) && a2.start < (a1.start + a1.length)) {
-          this.errors.push("Array " + a1.name + " overlaps with " + a2.name);
+          this.path = a1.path + "/" + a2.path;
+          this.addError("Array " + a1.name + " overlaps with " + a2.name);
         }
       }
     }
@@ -58,7 +70,7 @@ class Report {
 
     if (this.errors.length) {
       out += "\n Errors (" + this.errors.length + "):\n  "
-      + this.errors.join("\n  ");
+      + this.errors.map(e => e.path + ": " + e.message).join("\n  ");
     } else {
       out += "\n No errors were found."
     }
