@@ -62,7 +62,8 @@ const Image = new Struct()
   .addMember(Struct.TYPES.INT, "nameIndex")
   .addMember(Struct.TYPES.SKIP(8), "unused")
   .addReference(Struct.TYPES.NULL_TERMINATED_STRING('ASCII'), "name", "nameIndex")
-  .addArray(Pixel, "pixels", "pixelOffset", "pixelNumber");
+  .addArray(Pixel, "pixels", "pixelOffset", "pixelNumber")
+  .addRule(Struct.RULES.EQUAL("magicNumber", 604051865));
 
 // --- And now import our image ---
 const data = Buffer.from("mRkBJAQAAAAEAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAhKjM8RU5XYGlye4SNlp+osbrDzNXe5/D5AwwVHicwOUJLVF1mb3iBipOcpa63wMlUaW5hAA==", "base64");
@@ -102,8 +103,11 @@ console.log(image.data);
 ```
 
 ## Methods
-### `struct.import(buffer, offset)`
+### `struct.read(buffer, offset)`
 Reads data from a buffer from a specific address on. Returns the data as object.
+
+### `struct.report(buffer, offset)`
+Reads data from a buffer from a specific address on. Returns an object containing additional data about the import like how many bytes were actually read. The returned object also holds the imported data.
 
 ### `struct.validate(buffer, offset)`
 Returns an boolean if the data matches the struct.
@@ -130,6 +134,9 @@ When `relative` is set to true, the array will be read from the index + the stru
 `index` is the start address of the elementto load. If a string is given, it will read the value from another member with that name.
 
 When `relative` is set to true, the index is relative to the start of the parent struct.
+
+### `struct.addRule(rule)`
+Adds a rule. A rule is like a test. If it is not successful, an error will be added to the report.
 
 ## Inbuilt Types
 These inbuilt types are accesiable with `Structron.TYPES.`
