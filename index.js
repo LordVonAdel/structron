@@ -84,6 +84,9 @@ class Struct {
   read(buffer, offset = 0, report = null) {
     let data = {};
     let address = offset;
+
+    if (!report) report = new Report({}, buffer);
+
     let path = report.path;
 
     for (let member of this.members) {
