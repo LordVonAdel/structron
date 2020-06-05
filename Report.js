@@ -6,10 +6,11 @@
 
 class Report {
 
-  constructor(options, buffer) {
+  constructor(buffer, options) {
     this.buffer = buffer;
     
-    this.monitorUsage = !!options.monitorUsage;
+    this.monitorUsage = Boolean(options.monitorUsage);
+    this.hideReferenceValues = Boolean(options.hideReferenceValues)
 
     if (this.monitorUsage) {
       this.usageBuffer = Buffer.alloc(buffer.length);
@@ -79,6 +80,7 @@ class Report {
   }
 
   getUsage() {
+    if (!this.monitorUsage) return NaN;
     let number = 0;
     for (let i = 0; i < this.usageBuffer.length; i++) {
       if (this.usageBuffer[i] > 0) number++;

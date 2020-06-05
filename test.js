@@ -53,7 +53,10 @@ function testImage() {
   data.writeInt8(0x6e, 82);
   data.writeInt8(0x61, 83);
 
-  return JSON.stringify(Image.report(data).data) == `{"magicNumber":604051865,"size":{"width":4,"height":4},"pixelOffset":32,"pixelNumber":16,"nameIndex":80,"unused":null,"pixels":[{"color":{"r":1,"g":33,"b":1},"alpha":51},{"color":{"r":28,"g":60,"b":28},"alpha":78},{"color":{"r":23,"g":23,"b":23},"alpha":105},{"color":{"r":18,"g":50,"b":18},"alpha":132},{"color":{"r":13,"g":13,"b":13},"alpha":159},{"color":{"r":8,"g":40,"b":8},"alpha":186},{"color":{"r":3,"g":3,"b":3},"alpha":213},{"color":{"r":30,"g":30,"b":30},"alpha":240},{"color":{"r":25,"g":57,"b":25},"alpha":12},{"color":{"r":21,"g":21,"b":21},"alpha":39},{"color":{"r":16,"g":48,"b":16},"alpha":66},{"color":{"r":11,"g":11,"b":11},"alpha":93},{"color":{"r":6,"g":38,"b":6},"alpha":120},{"color":{"r":1,"g":1,"b":1},"alpha":147},{"color":{"r":28,"g":28,"b":28},"alpha":174},{"color":{"r":23,"g":55,"b":23},"alpha":201}],"name":"Tina"}`
+  let out = Image.report(data, 0, { hideReferenceValues: true });
+  if ("nameIndex" in out.data) return false;
+
+  return JSON.stringify(out.data) == `{"magicNumber":604051865,"size":{"width":4,"height":4},"unused":null,"pixels":[{"color":{"r":1,"g":33,"b":1},"alpha":51},{"color":{"r":28,"g":60,"b":28},"alpha":78},{"color":{"r":23,"g":23,"b":23},"alpha":105},{"color":{"r":18,"g":50,"b":18},"alpha":132},{"color":{"r":13,"g":13,"b":13},"alpha":159},{"color":{"r":8,"g":40,"b":8},"alpha":186},{"color":{"r":3,"g":3,"b":3},"alpha":213},{"color":{"r":30,"g":30,"b":30},"alpha":240},{"color":{"r":25,"g":57,"b":25},"alpha":12},{"color":{"r":21,"g":21,"b":21},"alpha":39},{"color":{"r":16,"g":48,"b":16},"alpha":66},{"color":{"r":11,"g":11,"b":11},"alpha":93},{"color":{"r":6,"g":38,"b":6},"alpha":120},{"color":{"r":1,"g":1,"b":1},"alpha":147},{"color":{"r":28,"g":28,"b":28},"alpha":174},{"color":{"r":23,"g":55,"b":23},"alpha":201}],"name":"Tina"}`
 }
 
 /**

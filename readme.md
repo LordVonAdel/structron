@@ -106,8 +106,12 @@ console.log(image.data);
 ### `struct.read(buffer, offset)`
 Reads data from a buffer from a specific address on. Returns the data as object.
 
-### `struct.report(buffer, offset)`
+### `struct.report(buffer, offset, options)`
 Reads data from a buffer from a specific address on. Returns an object containing additional data about the import like how many bytes were actually read. The returned object also holds the imported data.
+
+`options.monitorUsage`: Keep track of what bytes were read.
+
+`options.hideReferenceValues`: Remove reference fields (array offset, array length and reference offset fields) from output data.
 
 ### `struct.validate(buffer, offset)`
 Returns an boolean if the data matches the struct.

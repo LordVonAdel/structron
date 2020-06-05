@@ -98,7 +98,7 @@ class Struct {
 
     for (let array of this.arrays) {
       let arrayOffset = (typeof array.offsetMemberName == 'string') ? data[array.offsetMemberName] : array.offsetMemberName;
-      let arrayCount = (typeof array.offsetMemberName == 'string') ? data[array.countMemberName] : array.countMemberName;
+      let arrayCount = (typeof array.countMemberName == 'string') ? data[array.countMemberName] : array.countMemberName;
 
       if (array.relative) arrayOffset += offset;
 
@@ -148,7 +148,18 @@ class Struct {
     }
 
     if (report) {
-      report.markAreaAsRead(offset, this.SIZE)
+      report.markAreaAsRead(offset, this.SIZE);
+
+      if (report.hideReferenceValues) {
+        // Remove all values that are only used as pointers or other data structure data to keep the result clean
+        for (let array of this.arrays) {
+          if (typeof array.offsetMemberName == 'string') delete data[array.offsetMemberName];
+          if (typeof array.countMemberName == 'string') delete data[array.countMemberName];
+        }
+        for (let reference of this.references) {
+          if (typeof reference.memberName == 'string') delete data[reference.memberName];
+        }
+      }
     }
 
     return data;
@@ -167,10 +178,8 @@ class Struct {
    * @param {*} offset Offset byte to start reading from
    * @returns {Report} The report
    */
-  report(buffer, offset) {
-    let report = new Report({
-      monitorUsage: true
-    }, buffer);
+  report(buffer, offset, options = { monitorUsage: true }) {
+    let report = new Report(buffer, options);
     report.data = this.read(buffer, offset, report);
 
     report.checkForArrayCollisions();
