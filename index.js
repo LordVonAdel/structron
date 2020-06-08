@@ -118,8 +118,8 @@ class Struct {
       if (report) {
         report.arrays.push({
           name: array.name,
-          start: arrayOffset, 
-          count: arrayCount, 
+          start: arrayOffset,
+          count: arrayCount,
           length: arrayCount * array.type.SIZE,
           path: path + "." + array.name
         });

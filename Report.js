@@ -50,6 +50,9 @@ class Report {
         if (a1 == a2) continue;
         if (a1.start == a2.start) continue;
 
+        // Arrays are allowed in other arrays if multidimensional. This check removes this kind of error, but will give false positives!
+        if (a1.path.includes(a2.path) || a2.path.includes(a1.path)) continue;
+
         if (a1.start < (a2.start + a2.length) && a2.start < (a1.start + a1.length)) {
           this.path = a1.path + "/" + a2.path;
           this.addError("Array " + a1.name + " overlaps with " + a2.name);
