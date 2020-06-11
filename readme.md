@@ -148,20 +148,35 @@ These inbuilt types are accesiable with `Structron.TYPES.`
 ### `INT`
 4 byte signed little-endian Integer
 
+### `INT_BE`
+4 byte signed big-endian Integer
+
 ### `UINT`
 4 byte unsigned little-endian Integer
+
+### `UINT_BE`
+2 byte unsigned big-endian Integer
 
 ### `SHORT`
 2 byte signed little-endian Integer
 
+### `SHORT_BE`
+2 byte signed big-endian Integer
+
 ### `USHORT`
 2 byte signed little-endian Integer
+
+### `USHORT_BE`
+2 byte signed big-endian Integer
 
 ### `BYTE`
 Unsigned 1 byte
 
 ### `FLOAT`
 4 byte little-endian Float
+
+### `FLOAT_BE`
+4 byte big-endian Float
 
 ### `CHAR`
 Same as `BYTE`

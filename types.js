@@ -14,6 +14,16 @@ module.exports = {
   },
 
   /**
+   * Signed 4 byte BE Integer
+   */
+  INT_BE: {
+    read(buffer, offset) {
+      return buffer.readInt32BE(offset)
+    },
+    SIZE: 4
+  },
+
+  /**
    * Unsigned 4 byte LE integer
    */
   UINT: {
@@ -24,11 +34,32 @@ module.exports = {
   },
 
   /**
+   * Unsigned 4 byte BE Integer
+   */
+  UINT_BE: {
+    read(buffer, offset) {
+      return buffer.readUInt32BE(offset)
+    },
+    SIZE: 4
+  },
+
+
+  /**
    * Signed 16 bit LE integer
    */
   SHORT: {
     read(buffer, offset) {
       return buffer.readInt16LE(offset)
+    },
+    SIZE: 2
+  },
+
+  /**
+   * Signed 16 bit BE integer
+   */
+  SHORT_BE: {
+    read(buffer, offset) {
+      return buffer.readInt16BE(offset)
     },
     SIZE: 2
   },
@@ -44,11 +75,31 @@ module.exports = {
   },
 
   /**
+   * Unsigned 16 bit BE integer
+   */
+  USHORT_BE: {
+    read(buffer, offset) {
+      return buffer.readUInt16BE(offset)
+    },
+    SIZE: 2
+  },
+
+  /**
    * 4 Byte LE float
    */
   FLOAT: {
     read(buffer, offset) {
       return buffer.readFloatLE(offset)
+    },
+    SIZE: 4
+  },
+
+  /**
+   * 4 Byte BE float
+   */
+  FLOAT: {
+    read(buffer, offset) {
+      return buffer.readFloatBE(offset)
     },
     SIZE: 4
   },

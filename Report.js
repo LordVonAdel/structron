@@ -50,7 +50,7 @@ class Report {
         if (a1 == a2) continue;
         if (a1.start == a2.start) continue;
 
-        // Arrays are allowed in other arrays if multidimensional. This check removes this kind of error, but will give false positives!
+        // Arrays are allowed in other arrays if multidimensional. This check removes this kind of error, but will give false negatives!
         if (a1.path.includes(a2.path) || a2.path.includes(a1.path)) continue;
 
         if (a1.start < (a2.start + a2.length) && a2.start < (a1.start + a1.length)) {
