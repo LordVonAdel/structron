@@ -67,6 +67,7 @@ class Struct {
 
   /**
    * Adds a rule. Rules give extra validation options
+   * @param {Rule} rule The rule to add. Rules can be generated with the static methods of Struct.RULES
    * @returns {Struct} itself
    */
   addRule(rule) {
@@ -202,6 +203,9 @@ class Struct {
     }
   }
 
+  /**
+   * The size, an instance of this struct will occupy. This does not contain the content of arrays.
+   */
   get SIZE() {
     return this.members.reduce((val, member) => val + member.type.SIZE, 0);
   }

@@ -61,6 +61,9 @@ class Report {
     }
   }
 
+  /**
+   * Returns a formatted string containing the reports result.
+   */
   toString() {
     let out = "\n===Structron-Report==="
     + "\n Buffer size: " + this.buffer.length;
@@ -82,6 +85,9 @@ class Report {
     return out;
   }
 
+  /**
+   * Returns the number of read bytes. Returns NaN, if monitorUsage is false
+   */
   getUsage() {
     if (!this.monitorUsage) return NaN;
     let number = 0;
