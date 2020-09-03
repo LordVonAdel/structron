@@ -81,6 +81,7 @@ class Struct {
    * Converts a buffer to an object with the structs structure
    * @param {Buffer} buffer Buffer to read from
    * @param {=Number} offset Offset byte to start reading from
+   * @returns {Object} The data that was read
    */
   read(buffer, offset = 0, report = null) {
     let data = {};
@@ -205,11 +206,17 @@ class Struct {
 
   /**
    * The size, an instance of this struct will occupy. This does not contain the content of arrays.
+   * @returns {Number}
    */
   get SIZE() {
     return this.members.reduce((val, member) => val + member.type.SIZE, 0);
   }
 
+  /**
+   * Returns the relative offset of an attribute in this struct definition
+   * @param {string} name Name of the attribute
+   * @returns {void} Relative offset in bytes
+   */
   getOffsetByName(name) {
     let address = 0;
     for (let member of this.members) {
