@@ -8,7 +8,7 @@ module.exports = {
    */
   INT: {
     read(buffer, offset) {
-      return buffer.readInt32LE(offset)
+      return buffer.readInt32LE(offset);
     },
     SIZE: 4
   },
@@ -18,7 +18,7 @@ module.exports = {
    */
   INT_BE: {
     read(buffer, offset) {
-      return buffer.readInt32BE(offset)
+      return buffer.readInt32BE(offset);
     },
     SIZE: 4
   },
@@ -28,7 +28,7 @@ module.exports = {
    */
   UINT: {
     read(buffer, offset) {
-      return buffer.readUInt32LE(offset)
+      return buffer.readUInt32LE(offset);
     },
     SIZE: 4
   },
@@ -38,7 +38,7 @@ module.exports = {
    */
   UINT_BE: {
     read(buffer, offset) {
-      return buffer.readUInt32BE(offset)
+      return buffer.readUInt32BE(offset);
     },
     SIZE: 4
   },
@@ -49,7 +49,7 @@ module.exports = {
    */
   SHORT: {
     read(buffer, offset) {
-      return buffer.readInt16LE(offset)
+      return buffer.readInt16LE(offset);
     },
     SIZE: 2
   },
@@ -59,7 +59,7 @@ module.exports = {
    */
   SHORT_BE: {
     read(buffer, offset) {
-      return buffer.readInt16BE(offset)
+      return buffer.readInt16BE(offset);
     },
     SIZE: 2
   },
@@ -69,7 +69,7 @@ module.exports = {
    */
   USHORT: {
     read(buffer, offset) {
-      return buffer.readUInt16LE(offset)
+      return buffer.readUInt16LE(offset);
     },
     SIZE: 2
   },
@@ -79,7 +79,7 @@ module.exports = {
    */
   USHORT_BE: {
     read(buffer, offset) {
-      return buffer.readUInt16BE(offset)
+      return buffer.readUInt16BE(offset);
     },
     SIZE: 2
   },
@@ -89,7 +89,7 @@ module.exports = {
    */
   FLOAT: {
     read(buffer, offset) {
-      return buffer.readFloatLE(offset)
+      return buffer.readFloatLE(offset);
     },
     SIZE: 4
   },
@@ -97,19 +97,20 @@ module.exports = {
   /**
    * 4 Byte BE float
    */
-  FLOAT: {
+  FLOAT_BE: {
     read(buffer, offset) {
-      return buffer.readFloatBE(offset)
+      return buffer.readFloatBE(offset);
     },
     SIZE: 4
   },
 
   /**
-   * 1 Byte char
+   * 1 ASCII character 
    */
   CHAR: {
     read(buffer, offset) {
-      return buffer.readUInt8(offset)
+      // Will be now (package version 0.3.0) converted to string. Hope this will not break anything
+      return String.fromCharCode(buffer.readUInt8(offset));
     },
     SIZE: 1
   },

@@ -1,6 +1,5 @@
 const Struct = require('./index.js');
 
-
 function testImage() {
   // --- First we need to define the custom datatypes ---
 
@@ -95,6 +94,27 @@ function testRuleEqual() {
   return report.errors.length == 1;
 }
 
-console.log("Image test:", testImage());
+function testCharType() {
+  let buffer = Buffer.alloc(8);
+  buffer[0] = 2;
+  buffer[1] = 6;
+  buffer[2] = 76; 
+  buffer[3] = 69; 
+  buffer[4] = 79; 
+  buffer[5] = 78;
+  buffer[6] = 73;
+  buffer[7] = 69;
+
+  let testStruct = new Struct()
+    .addMember(Struct.TYPES.BYTE, "offset")
+    .addMember(Struct.TYPES.BYTE, "length")
+    .addArray(Struct.TYPES.CHAR, "chars", "offset", "length")
+
+  var rep = testStruct.report(buffer);
+  return rep.data.chars.join("") == "LEONIE";
+}
+
+console.log("Image:", testImage());
 console.log("Overlapping arrays:", testOverlappingArrays());
-console.log("Equal rule Test:", testRuleEqual());
+console.log("Equal rule:", testRuleEqual());
+console.log("Character type:", testCharType());
