@@ -192,7 +192,7 @@ class Struct {
   /**
    * Validates a structure
    * @param {Buffer} buffer Buffer to read from
-   * @param {Number} offset Byte offset in the buffer to begin reading from
+   * @param {number} offset Byte offset in the buffer to begin reading from
    * @returns {Boolean} True when valid 
    */
   validate(buffer, offset = 0) {
@@ -206,7 +206,7 @@ class Struct {
 
   /**
    * The size, an instance of this struct will occupy. This does not contain the content of arrays.
-   * @returns {Number}
+   * @returns {number}
    */
   get SIZE() {
     return this.members.reduce((val, member) => val + member.type.SIZE, 0);
@@ -215,7 +215,7 @@ class Struct {
   /**
    * Returns the relative offset of an attribute in this struct definition
    * @param {string} name Name of the attribute
-   * @returns {void} Relative offset in bytes
+   * @returns {number} Relative offset in bytes
    */
   getOffsetByName(name) {
     let address = 0;

@@ -110,8 +110,8 @@ function testCharType() {
     .addMember(Struct.TYPES.BYTE, "length")
     .addArray(Struct.TYPES.CHAR, "chars", "offset", "length")
 
-  var rep = testStruct.report(buffer);
-  return rep.data.chars.join("") == "LEONIE";
+  let report = testStruct.report(buffer);
+  return report.data.chars.join("") == "LEONIE";
 }
 
 console.log("Image:", testImage());

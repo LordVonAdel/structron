@@ -127,8 +127,8 @@ module.exports = {
 
   /**
    * String with fixed Length
-   * @param {Number} length Length to read
-   * @param {=String} encoding Codec to use. Anything that is supported by buffer.toString()
+   * @param {number} length Length to read
+   * @param {=string} encoding Codec to use. Anything that is supported by buffer.toString()
    */
   STRING(length, encoding = "ascii") {
     return {
@@ -141,7 +141,7 @@ module.exports = {
 
   /**
    * Null terminated string. Don't use this type in a struct. Only as reference!
-   * @param {=String} encoding Codec to use. Anything that is supported by buffer.toString()
+   * @param {=string} encoding Codec to use. Anything that is supported by buffer.toString()
    */
   NULL_TERMINATED_STRING(encoding = "ascii") {
     return {
@@ -167,7 +167,7 @@ module.exports = {
 
   /**
    * Skips a given amount of bytes
-   * @param {Number} length Number of bytes to skip
+   * @param {number} length Number of bytes to skip
    */
   SKIP(length) {
     return {
