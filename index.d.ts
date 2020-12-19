@@ -1,5 +1,6 @@
 interface ValueType<T> {
   read(buffer: BufferSource, offset: number): T
+  write?(value: any, buffer: BufferSource, offset: number)
   SIZE: number
 }
 
@@ -27,20 +28,20 @@ declare class Struct implements ValueType<Struct> {
    * Adds a an array to load from values inside this struct. The order is not important
    * @param type Datatype of the member to load
    * @param name Name of the member
-   * @param offsetMemberName Number or Name of the member which stores the address of the array
-   * @param countMemberName Number or name of the member which stores the length of the array
+   * @param offset Number or name of the member which stores the address of the array
+   * @param count Number or name of the member which stores the length of the array
    * @param relative Is the address in the target member relative to the structs address?
    */
-  addArray(type: ValueType<any>, name: string, offsetMemberName: string, countMemberName: string, relative?: boolean): this
+  addArray(type: ValueType<any>, name: string, offset: string | number, count: string | number, relative?: boolean): this
   
   /**
-   * Adds a reference. References will appear as own members in the out data.
+   * Adds a reference. References will appear as own members in the out data. Recursive references are allowed and will produce an circular structure.
    * @param type Type of the reference
    * @param name Name of the new data member
-   * @param membername Name of the address containg existing data member
-   * @param relative Is the adress relative to the structs address?
+   * @param offset Number or name of member containing the offset
+   * @param relative Is the address relative to the structs address?
    */
-  addReference(type: ValueType<any>, name: string, memberName: string, relative?: boolean): this
+  addReference(type: ValueType<any>, name: string, offset: string | number, relative?: boolean): this
 
   /**
    * Adds a rule. Rules give extra validation options
@@ -63,6 +64,14 @@ declare class Struct implements ValueType<Struct> {
    * @returns The report
    */
   report(buffer: BufferSource, offset: number, options: ReportOptions): Report
+
+  /**
+   * Writes a struct to the buffer. If no buffer is given, a new one is created
+   * @param content Object to parse into the buffer
+   * @param buffer Target buffer
+   * @param offset Offset in target buffer
+   */
+  write(content: any, buffer?: BufferSource, offset?: number): BufferSource
 
   /**
    * Validates a structure
@@ -95,6 +104,7 @@ declare class Struct implements ValueType<Struct> {
    * Inbuilt types
    */
   static TYPES: {
+
     /* 
      * Signed 4 byte little-endian Integer 
      */
@@ -180,7 +190,10 @@ type ReportOptions = {
   monitorUsage: boolean
 }
 
-class Report {
+/**
+ * Stores the result of an import/read.
+ */
+declare class Report {
 
   constructor(buffer: BufferSource, options: ReportOptions)
 

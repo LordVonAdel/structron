@@ -1,8 +1,6 @@
 # Structron
 Structron is a reader for binary data. It parses buffers from in code defined models and returns the result as object.
 
-WARNING: It currently does not support recursive structures!
-
 ## Installation
 Install using [npm](https://www.npmjs.com/):
 ```
@@ -80,25 +78,25 @@ console.log(image.data);
   "pixelNumber": 16,
   "nameIndex": 80,
   "unused": null,
-  "pixels":[
-    { "color":{ "r":1,  "g":33, "b":1 },  "alpha":51 },
-    { "color":{ "r":28, "g":60, "b":28 }, "alpha":78 },
-    { "color":{ "r":23, "g":23, "b":23 }, "alpha":105 },
-    { "color":{ "r":18, "g":50, "b":18 }, "alpha":132 },
-    { "color":{ "r":13, "g":13, "b":13 }, "alpha":159 },
-    { "color":{ "r":8,  "g":40, "b":8 },  "alpha":186 },
-    { "color":{ "r":3,  "g":3,  "b":3 },  "alpha":213 },
-    { "color":{ "r":30, "g":30, "b":30 }, "alpha":240 },
-    { "color":{ "r":25, "g":57, "b":25 }, "alpha":12 },
-    { "color":{ "r":21, "g":21, "b":21 }, "alpha":39 },
-    { "color":{ "r":16, "g":48, "b":16 }, "alpha":66 },
-    { "color":{ "r":11, "g":11, "b":11 }, "alpha":93 },
-    { "color":{ "r":6,  "g":38, "b":6 },  "alpha":120 },
-    { "color":{ "r":1,  "g":1,  "b":1 },  "alpha":147 },
-    { "color":{ "r":28, "g":28, "b":28 }, "alpha":174 },
-    { "color":{ "r":23, "g":55, "b":23 }, "alpha":20 1}
+  "pixels": [
+    { "color": { "r": 1,  "g": 33, "b": 1 },  "alpha": 51 },
+    { "color": { "r": 28, "g": 60, "b": 28 }, "alpha": 78 },
+    { "color": { "r": 23, "g": 23, "b": 23 }, "alpha": 105 },
+    { "color": { "r": 18, "g": 50, "b": 18 }, "alpha": 132 },
+    { "color": { "r": 13, "g": 13, "b": 13 }, "alpha": 159 },
+    { "color": { "r": 8,  "g": 40, "b": 8 },  "alpha": 186 },
+    { "color": { "r": 3,  "g": 3,  "b": 3 },  "alpha": 213 },
+    { "color": { "r": 30, "g": 30, "b": 30 }, "alpha": 240 },
+    { "color": { "r": 25, "g": 57, "b": 25 }, "alpha": 12 },
+    { "color": { "r": 21, "g": 21, "b": 21 }, "alpha": 39 },
+    { "color": { "r": 16, "g": 48, "b": 16 }, "alpha": 66 },
+    { "color": { "r": 11, "g": 11, "b": 11 }, "alpha": 93 },
+    { "color": { "r": 6,  "g": 38, "b": 6 },  "alpha": 120 },
+    { "color": { "r": 1,  "g": 1,  "b": 1 },  "alpha": 147 },
+    { "color": { "r": 28, "g": 28, "b": 28 }, "alpha": 174 },
+    { "color": { "r": 23, "g": 55, "b": 23 }, "alpha": 20 1}
   ],
-  "name":"Tina"
+  "name": "Tina"
 }
 ```
 
@@ -131,6 +129,8 @@ Adds an member to the struct definition.
 When `relative` is set to true, the array will be read from the index + the structs address.
 
 ### `struct.addReference(type, name, index, relative)`
+Circular references are possible.
+
 `type` is the type of the object to reference.
 
 `name` is the name of the member that will be added to the output object.
@@ -179,7 +179,7 @@ Unsigned 1 byte
 4 byte big-endian Float
 
 ### `CHAR`
-Same as `BYTE`
+1 ASCII character
 
 ### `STRING(length, encoding)`
 String with variable length. 

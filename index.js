@@ -51,7 +51,7 @@ class Struct {
    * Adds a reference. References will appear as own members in the out data.
    * @param {*} type Type of the reference
    * @param {String} name Name of the new data member
-   * @param {String} membername Name of the address containg existing data member
+   * @param {String} memberName Name of the address containg existing data member
    * @param {Boolean} relative Is the adress relative to the structs address?
    * @returns {Struct}
    */
@@ -97,7 +97,6 @@ class Struct {
       address += member.type.SIZE;
     }
 
-
     for (let array of this.arrays) {
       let arrayOffset = (typeof array.offsetMemberName == 'string') ? data[array.offsetMemberName] : array.offsetMemberName;
       let arrayCount = (typeof array.countMemberName == 'string') ? data[array.countMemberName] : array.countMemberName;
@@ -132,9 +131,16 @@ class Struct {
       report.path = path + "." + reference.name;
 
       try {
-        let referenceOffset = data[reference.memberName];
+        let referenceOffset = reference.memberNamedata[reference.memberName];
         if (reference.relative) referenceOffset += offset;
-        data[reference.name] = reference.type.read(buffer, referenceOffset, report);
+
+        if (referenceOffset in report.referenceOffsets) {
+          data[reference.name] = report.referenceOffsets[referenceOffset];
+        } else {
+          let ref = reference.type.read(buffer, referenceOffset, report);
+          data[reference.name] = ref;
+          report.referenceOffsets[referenceOffset] = ref;
+        }
       } catch (e) {
         report.addError(e.message);
       }

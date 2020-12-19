@@ -98,9 +98,9 @@ function testCharType() {
   let buffer = Buffer.alloc(8);
   buffer[0] = 2;
   buffer[1] = 6;
-  buffer[2] = 76; 
-  buffer[3] = 69; 
-  buffer[4] = 79; 
+  buffer[2] = 76;
+  buffer[3] = 69;
+  buffer[4] = 79;
   buffer[5] = 78;
   buffer[6] = 73;
   buffer[7] = 69;
@@ -114,7 +114,28 @@ function testCharType() {
   return report.data.chars.join("") == "LEONIE";
 }
 
+function testWrite() {
+  
+}
+
+function testRecursiveRead() {
+  let buffer = Buffer.alloc(16);
+  buffer.writeUInt32LE(2206, 0);
+  buffer.writeUInt32LE(8, 4);
+  buffer.writeUInt32LE(1994, 8);
+  buffer.writeUInt32LE(0, 12);
+
+  let node = new Struct()
+    .addMember(Struct.TYPES.INT, "exampleValue")
+    .addMember(Struct.TYPES.INT, "partnerOffset");
+  node.addReference(node, "partner", "partnerOffset");
+
+  let report = node.report(buffer);
+  return (report.data.partner.exampleValue === report.data.partner.partner.partner.exampleValue);
+}
+
 console.log("Image:", testImage());
 console.log("Overlapping arrays:", testOverlappingArrays());
 console.log("Equal rule:", testRuleEqual());
 console.log("Character type:", testCharType());
+console.log("Recursive read:", testRecursiveRead());

@@ -2,6 +2,8 @@
  *  @class Report
  *  @type {Object}
  *  @property {Object} data The exported data.
+ * 
+ * Used as context for the current import.
  */
 
 class Report {
@@ -21,6 +23,7 @@ class Report {
 
     this.errors = [];
     this.arrays = [];
+    this.referenceOffsets = {};
   }
 
   addError(message) {
