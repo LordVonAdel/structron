@@ -131,7 +131,7 @@ class Struct {
       report.path = path + "." + reference.name;
 
       try {
-        let referenceOffset = reference.memberNamedata[reference.memberName];
+        let referenceOffset = (typeof reference.memberName == 'string') ? data[reference.memberName] : reference.memberName;
         if (reference.relative) referenceOffset += offset;
 
         if (referenceOffset in report.referenceOffsets) {
