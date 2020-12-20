@@ -10,6 +10,9 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readInt32LE(offset);
     },
+    write(value, buffer, offset) {
+      buffer.writeInt32LE(value, offset);
+    },
     SIZE: 4
   },
 
@@ -19,6 +22,9 @@ module.exports = {
   INT_BE: {
     read(buffer, offset) {
       return buffer.readInt32BE(offset);
+    },
+    write(value, buffer, offset) {
+      buffer.writeInt32BE(value, offset);
     },
     SIZE: 4
   },
@@ -30,6 +36,9 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt32LE(offset);
     },
+    write(value, buffer, offset) {
+      buffer.writeUInt32LE(value, offset);
+    },
     SIZE: 4
   },
 
@@ -39,6 +48,9 @@ module.exports = {
   UINT_BE: {
     read(buffer, offset) {
       return buffer.readUInt32BE(offset);
+    },
+    write(value, buffer, offset) {
+      buffer.writeUInt32BE(value, offset);
     },
     SIZE: 4
   },
@@ -51,6 +63,9 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readInt16LE(offset);
     },
+    write(value, buffer, offset) {
+      buffer.writeInt16LE(value, offset);
+    },
     SIZE: 2
   },
 
@@ -60,6 +75,9 @@ module.exports = {
   SHORT_BE: {
     read(buffer, offset) {
       return buffer.readInt16BE(offset);
+    },
+    write(value, buffer, offset) {
+      buffer.writeInt16BE(value, offset);
     },
     SIZE: 2
   },
@@ -71,6 +89,9 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt16LE(offset);
     },
+    write(value, buffer, offset) {
+      buffer.writeUInt16LE(value, offset);
+    },
     SIZE: 2
   },
 
@@ -80,6 +101,9 @@ module.exports = {
   USHORT_BE: {
     read(buffer, offset) {
       return buffer.readUInt16BE(offset);
+    },
+    write(value, buffer, offset) {
+      buffer.writeUInt16BE(value, offset);
     },
     SIZE: 2
   },
@@ -91,6 +115,9 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readFloatLE(offset);
     },
+    write(value, buffer, offset) {
+      buffer.writeFloatLE(value, offset);
+    },
     SIZE: 4
   },
 
@@ -100,6 +127,9 @@ module.exports = {
   FLOAT_BE: {
     read(buffer, offset) {
       return buffer.readFloatBE(offset);
+    },
+    write(value, buffer, offset) {
+      buffer.writeFLoatBE(value, offset);
     },
     SIZE: 4
   },
@@ -112,6 +142,9 @@ module.exports = {
       // Will be now (package version 0.3.0) converted to string. Hope this will not break anything
       return String.fromCharCode(buffer.readUInt8(offset));
     },
+    write(value, buffer, offset) {
+      buffer.writeUInt8(String(value).charCodeAt(0), offset);
+    },
     SIZE: 1
   },
 
@@ -121,6 +154,9 @@ module.exports = {
   BYTE: {
     read(buffer, offset) {
       return buffer.readUInt8(offset)
+    },
+    write(value, buffer, offset) {
+      buffer.writeUInt8(value, offset);
     },
     SIZE: 1
   },
@@ -134,6 +170,9 @@ module.exports = {
     return {
       read(buffer, offset) {
         return buffer.toString(encoding, offset, offset + length).replace(/\0/g, '');
+      },
+      write(value, buffer, offset) {
+        buffer.write(value, offset);
       },
       SIZE: length
     }
@@ -172,6 +211,7 @@ module.exports = {
   SKIP(length) {
     return {
       read() { return null },
+      write() {},
       SIZE: length
     }
   }
