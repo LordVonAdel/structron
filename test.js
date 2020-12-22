@@ -18,6 +18,10 @@ function testImage() {
         b: short & 0b0000000000011111
       }
     },
+    write(value, context, offset) {
+      let val = (value.r << 11) | (value.g << 5) | value.b;
+      context.buffer.writeUInt16LE(val, offset);
+    },
     SIZE: 2 // Size in bytes
   };
 
@@ -36,6 +40,7 @@ function testImage() {
     .addReference(Struct.TYPES.NULL_TERMINATED_STRING(), "name", "nameIndex")
     .addArray(Pixel, "pixels", "pixelOffset", "pixelNumber");
 
+  // Create image data
   let data = Buffer.alloc(85);
   data.writeInt32LE(0x24011999, 0);
   data.writeInt32LE(4, 4);
@@ -52,16 +57,27 @@ function testImage() {
   data.writeInt8(0x6e, 82);
   data.writeInt8(0x61, 83);
 
+  // Read image data
   let out = Image.report(data, 0, { hideReferenceValues: true });
   if ("nameIndex" in out.data) return false;
 
-  return JSON.stringify(out.data) == `{"magicNumber":604051865,"size":{"width":4,"height":4},"unused":null,"pixels":[{"color":{"r":1,"g":33,"b":1},"alpha":51},{"color":{"r":28,"g":60,"b":28},"alpha":78},{"color":{"r":23,"g":23,"b":23},"alpha":105},{"color":{"r":18,"g":50,"b":18},"alpha":132},{"color":{"r":13,"g":13,"b":13},"alpha":159},{"color":{"r":8,"g":40,"b":8},"alpha":186},{"color":{"r":3,"g":3,"b":3},"alpha":213},{"color":{"r":30,"g":30,"b":30},"alpha":240},{"color":{"r":25,"g":57,"b":25},"alpha":12},{"color":{"r":21,"g":21,"b":21},"alpha":39},{"color":{"r":16,"g":48,"b":16},"alpha":66},{"color":{"r":11,"g":11,"b":11},"alpha":93},{"color":{"r":6,"g":38,"b":6},"alpha":120},{"color":{"r":1,"g":1,"b":1},"alpha":147},{"color":{"r":28,"g":28,"b":28},"alpha":174},{"color":{"r":23,"g":55,"b":23},"alpha":201}],"name":"Tina"}`
+  let jsonData = `{"magicNumber":604051865,"size":{"width":4,"height":4},"unused":null,"pixels":[{"color":{"r":1,"g":33,"b":1},"alpha":51},{"color":{"r":28,"g":60,"b":28},"alpha":78},{"color":{"r":23,"g":23,"b":23},"alpha":105},{"color":{"r":18,"g":50,"b":18},"alpha":132},{"color":{"r":13,"g":13,"b":13},"alpha":159},{"color":{"r":8,"g":40,"b":8},"alpha":186},{"color":{"r":3,"g":3,"b":3},"alpha":213},{"color":{"r":30,"g":30,"b":30},"alpha":240},{"color":{"r":25,"g":57,"b":25},"alpha":12},{"color":{"r":21,"g":21,"b":21},"alpha":39},{"color":{"r":16,"g":48,"b":16},"alpha":66},{"color":{"r":11,"g":11,"b":11},"alpha":93},{"color":{"r":6,"g":38,"b":6},"alpha":120},{"color":{"r":1,"g":1,"b":1},"alpha":147},{"color":{"r":28,"g":28,"b":28},"alpha":174},{"color":{"r":23,"g":55,"b":23},"alpha":201}],"name":"Tina"}`;
+  if (JSON.stringify(out.data) != jsonData) return false;
+
+  // Write image data
+  let ctx = Image.write(JSON.parse(jsonData));
+  let buffer = ctx.buffer;
+
+  // Read image data again from written buffer
+  let report = Image.report(buffer, 0, { hideReferenceValues: true });
+  let newJsonData = JSON.stringify(report.data);
+  return (newJsonData == jsonData);
 }
 
 /**
  * Tests overlapping arrays and usage
  */
-function testOverlappingArrays() {
+function testReadOverlappingArrays() {
   let buffer = Buffer.alloc(64);
 
   buffer.writeUInt8(16, 0);
@@ -114,10 +130,6 @@ function testCharType() {
   return report.data.chars.join("") == "LEONIE";
 }
 
-function testWrite() {
-  
-}
-
 function testRecursiveRead() {
   let buffer = Buffer.alloc(16);
   buffer.writeUInt32LE(2206, 0);
@@ -134,8 +146,11 @@ function testRecursiveRead() {
   return (report.data.partner.exampleValue === report.data.partner.partner.partner.exampleValue);
 }
 
-console.log("Image:", testImage());
-console.log("Overlapping arrays:", testOverlappingArrays());
+console.log("--- Reading tests ---")
+console.log("Overlapping arrays:", testReadOverlappingArrays());
 console.log("Equal rule:", testRuleEqual());
 console.log("Character type:", testCharType());
-console.log("Recursive read:", testRecursiveRead());
+console.log("Recursive:", testRecursiveRead());
+
+console.log("--- Common ---");
+console.log("Image:", testImage());

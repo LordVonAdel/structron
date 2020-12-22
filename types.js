@@ -10,8 +10,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readInt32LE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeInt32LE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeInt32LE(value, offset);
     },
     SIZE: 4
   },
@@ -23,8 +23,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readInt32BE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeInt32BE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeInt32BE(value, offset);
     },
     SIZE: 4
   },
@@ -36,8 +36,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt32LE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeUInt32LE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeUInt32LE(value, offset);
     },
     SIZE: 4
   },
@@ -49,8 +49,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt32BE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeUInt32BE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeUInt32BE(value, offset);
     },
     SIZE: 4
   },
@@ -63,8 +63,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readInt16LE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeInt16LE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeInt16LE(value, offset);
     },
     SIZE: 2
   },
@@ -76,8 +76,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readInt16BE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeInt16BE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeInt16BE(value, offset);
     },
     SIZE: 2
   },
@@ -89,8 +89,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt16LE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeUInt16LE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeUInt16LE(value, offset);
     },
     SIZE: 2
   },
@@ -102,8 +102,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt16BE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeUInt16BE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeUInt16BE(value, offset);
     },
     SIZE: 2
   },
@@ -115,8 +115,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readFloatLE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeFloatLE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeFloatLE(value, offset);
     },
     SIZE: 4
   },
@@ -128,8 +128,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readFloatBE(offset);
     },
-    write(value, buffer, offset) {
-      buffer.writeFLoatBE(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeFLoatBE(value, offset);
     },
     SIZE: 4
   },
@@ -142,8 +142,8 @@ module.exports = {
       // Will be now (package version 0.3.0) converted to string. Hope this will not break anything
       return String.fromCharCode(buffer.readUInt8(offset));
     },
-    write(value, buffer, offset) {
-      buffer.writeUInt8(String(value).charCodeAt(0), offset);
+    write(value, context, offset) {
+      context.buffer.writeUInt8(String(value).charCodeAt(0), offset);
     },
     SIZE: 1
   },
@@ -155,8 +155,8 @@ module.exports = {
     read(buffer, offset) {
       return buffer.readUInt8(offset)
     },
-    write(value, buffer, offset) {
-      buffer.writeUInt8(value, offset);
+    write(value, context, offset) {
+      context.buffer.writeUInt8(value, offset);
     },
     SIZE: 1
   },
@@ -171,8 +171,8 @@ module.exports = {
       read(buffer, offset) {
         return buffer.toString(encoding, offset, offset + length).replace(/\0/g, '');
       },
-      write(value, buffer, offset) {
-        buffer.write(value, offset);
+      write(value, context, offset) {
+        context.buffer.write(value, offset);
       },
       SIZE: length
     }
@@ -200,7 +200,13 @@ module.exports = {
 
         return buffer.toString(encoding, offset, offset + len);
       },
-      SIZE: NaN
+      write(value, context, offset) {
+        context.buffer.write(value, offset, value.length, encoding);
+      },
+      SIZE: NaN,
+      getWriteSize(value) {
+        return Buffer.from(value, encoding).length + 1;
+      }
     }
   },
 

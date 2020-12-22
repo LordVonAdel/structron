@@ -1,4 +1,11 @@
 const Report = require('./Report.js');
+const WriteContext = require('./WriteContext.js');
+
+/**
+ * @todo Fatal rules option
+ * @todo Validate rules on writing
+ * @todo raw data type
+ */
 
 class Struct {
 
@@ -11,32 +18,48 @@ class Struct {
     this.arrays = [];
     this.references = [];
     this.rules = [];
+    this.statics = [];
     this.name = name;
   }
 
   /**
    * Adds a member to load
    * @param {Type} type Datatype of the member to load
-   * @param {String} name Name of the member
+   * @param {string} name Name of the member
    * @returns {Struct}
    */
   addMember(type, name) {
     if (isNaN(type.SIZE)) throw new Error("Element with no fixed size is not allowed as struct member (" + name + ")!",);
 
-    this.members.push({type, name});
+    let offset = this.members.reduce((size, mem) => size+mem.SIZE, 0);
+    this.members.push({type, name, offset});
+
     return this;
   }
 
   /**
    * Adds a an array to load from values inside this struct. The order is not important
    * @param {Type} type Datatype of the member to load
-   * @param {String} name Name of the member
+   * @param {string} name Name of the member
    * @param {any} offsetMemberName Number or Name of the member which stores the address of the array
    * @param {any} countMemberName Number or name of the member which stores the length of the array
    * @param {Boolean} relative Is the address in the target member relative to the structs address?
    * @returns {Struct}
    */
   addArray(type, name, offsetMemberName, countMemberName, relative = false) {
+
+    if (typeof offsetMemberName == 'number') {
+      let value = offsetMemberName;
+      offsetMemberName = "_" + name + "_offset";
+      this.addStatic(offsetMemberName, value);
+    }
+
+    if (typeof countMemberName == 'number') {
+      let value = countMemberName;
+      countMemberName = "_" + name + "_offset";
+      this.addStatic(countMemberName, value);
+    }
+
     this.arrays.push({
       name,
       offsetMemberName,
@@ -50,17 +73,37 @@ class Struct {
   /**
    * Adds a reference. References will appear as own members in the out data.
    * @param {*} type Type of the reference
-   * @param {String} name Name of the new data member
-   * @param {String} memberName Name of the address containg existing data member
+   * @param {string} name Name of the new data member
+   * @param {string} memberName Name of the address containg existing data member
    * @param {Boolean} relative Is the adress relative to the structs address?
    * @returns {Struct}
    */
   addReference(type, name, memberName, relative = false) {
+
+    if (typeof memberName == 'number') {
+      let value = memberName;
+      memberName = "_" + name + "_offset";
+      this.addStatic(memberName, value);
+    }
+
     this.references.push({
       type,
       name,
       memberName,
       relative
+    });
+    return this;
+  }
+
+  /**
+   * Adds a static value. (will not be written to, or read from buffer)
+   * @param {string} name 
+   * @param {any} value 
+   */
+  addStatic(name, value) {
+    this.statics.push({
+      name, 
+      value
     });
     return this;
   }
@@ -80,7 +123,7 @@ class Struct {
   /**
    * Converts a buffer to an object with the structs structure
    * @param {Buffer} buffer Buffer to read from
-   * @param {=Number} offset Offset byte to start reading from
+   * @param {=number} offset Offset byte to start reading from
    * @returns {Object} The data that was read
    */
   read(buffer, offset = 0, report = null) {
@@ -91,6 +134,10 @@ class Struct {
 
     let path = report.path;
 
+    for (let _static of this.statics) {
+      data[_static.name] = _static.value;
+    }
+
     for (let member of this.members) {
       report.path = path + "." + member.name;
       data[member.name] = member.type.read(buffer, address, report);
@@ -98,8 +145,8 @@ class Struct {
     }
 
     for (let array of this.arrays) {
-      let arrayOffset = (typeof array.offsetMemberName == 'string') ? data[array.offsetMemberName] : array.offsetMemberName;
-      let arrayCount = (typeof array.countMemberName == 'string') ? data[array.countMemberName] : array.countMemberName;
+      let arrayOffset = data[array.offsetMemberName];
+      let arrayCount = data[array.countMemberName];
 
       if (array.relative) arrayOffset += offset;
 
@@ -131,7 +178,7 @@ class Struct {
       report.path = path + "." + reference.name;
 
       try {
-        let referenceOffset = (typeof reference.memberName == 'string') ? data[reference.memberName] : reference.memberName;
+        let referenceOffset = data[reference.memberName];
         if (reference.relative) referenceOffset += offset;
 
         if (referenceOffset in report.referenceOffsets) {
@@ -171,6 +218,134 @@ class Struct {
     }
 
     return data;
+  }
+
+  /**
+   * Calculates the size needed for a buffer, to store the given object.
+   * @param {any} object The data object
+   * @returns {number} Size in bytes
+   */
+  getWriteSize(object) {
+    let size = this.SIZE;
+
+    for (let array of this.arrays) {
+      let type = array.type;
+
+      for (let item of object[array.name]) {
+
+        if (type.getWriteSize) {
+          size += type.getWriteSize(item);
+        } else {
+          size += type.SIZE;
+        }
+
+      }
+    }
+
+    for (let reference of this.references) {
+      let type = reference.type;
+
+      if (type.getWriteSize) {
+        size += type.getWriteSize(object[reference.name]);
+      } else {
+        size += type.SIZE;
+      }
+    }
+
+    return size;
+  }
+
+  /**
+   * Writes data to an buffer, using this structure
+   * @param {any} object Data holding object
+   * @param {=WriteContext} context Internally used for the write process
+   * @param {=number} offset Offset, for start writing
+   */
+  write(object, context = null, offset = 0) {
+    if (!context) {
+      context = new WriteContext({
+        bufferSize: this.getWriteSize(object)
+      });
+      context.allocate(this.SIZE);
+    }
+
+    let p = context.path;
+
+    for (let array of this.arrays) {
+      context.path = p + "." + array.name;
+
+      if (!(array.name in object)) {
+        context.addError("Attribute does not exists!");
+        continue;
+      }
+
+      let data = object[array.name];
+      if (!Array.isArray(data)) {
+        context.addError("Attribute is not an array!");
+        continue;
+      }
+
+      let arrayOffset = context.allocate(data.length * array.type.SIZE);
+
+      if (typeof array.offsetMemberName == 'string') {
+        object[array.offsetMemberName] = arrayOffset;
+        if (array.relative) {
+          object[array.offsetMemberName] -= offset;
+        }
+      }
+
+      if (typeof array.countMemberName == 'string') {
+        object[array.countMemberName] = data.length;
+      }
+
+      for (let index in data) {
+        context.path = p + "." + array.name + "[" + index + "]";
+        array.type.write(data[index], context, arrayOffset + index * array.type.SIZE);
+      }
+    }
+
+    for (let reference of this.references) {
+      context.path = p + "." + reference.name;
+      
+      if (!(reference.name in object)) {
+        context.addError("Attribute does not exists!");
+        continue;
+      }
+
+      let data = object[reference.name];
+      let type = reference.type;
+
+      let size = type.SIZE;
+      if (type.getWriteSize) {
+        size += type.getWriteSize(object[reference.name]);
+      }
+      
+      let referenceOffset = context.allocate(size);
+
+      if (typeof reference.memberName == 'string') {
+        object[reference.memberName] = referenceOffset;
+        if (reference.relative) {
+          object[reference.memberName] -= offset;
+        }
+      }
+
+      context.path = p + "." + reference.name;
+      type.write(data, context, referenceOffset);
+    }
+
+    for (let member of this.members) {
+      context.path = p + "." + member.name;
+
+      if (!(member.name in object)) {
+        context.addError("Attribute does not exists!");
+        continue;
+      }
+
+      context.path = p + "." + member.name;
+      member.type.write(object[member.name], context, offset + this.getOffsetByName(member.name));
+    }
+
+    return context;
   }
 
   /**

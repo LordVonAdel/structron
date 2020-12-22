@@ -1,6 +1,6 @@
 interface ValueType<T> {
   read(buffer: BufferSource, offset: number): T
-  write?(value: any, buffer: BufferSource, offset: number)
+  write?(value: any, context: WriteContext, offset: number)
   SIZE: number
 }
 
@@ -48,6 +48,13 @@ declare class Struct implements ValueType<Struct> {
    * @param rule The rule to add. Rules can be generated with the static methods of Struct.RULES
    */
   addRule(rule: Rule): this
+
+  /**
+   * Adds a static value. Will be attached to every read object. Statics have no have any influence on the binary data!
+   * @param name 
+   * @param value 
+   */
+  addStatic(name, value): this
 
   /**
    * Converts a buffer to an object with the structs structure
