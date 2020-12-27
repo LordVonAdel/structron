@@ -1,4 +1,4 @@
-const Report = require('./Report.js');
+const ReadContext = require('./ReadContext.js');
 const WriteContext = require('./WriteContext.js');
 
 /**
@@ -126,21 +126,21 @@ class Struct {
    * @param {=number} offset Offset byte to start reading from
    * @returns {Object} The data that was read
    */
-  read(buffer, offset = 0, report = null) {
+  read(buffer, offset = 0, readContext = null) {
     let data = {};
     let address = offset;
 
-    if (!report) report = new Report({}, buffer);
+    if (!readContext) readContext = new ReadContext({}, buffer);
 
-    let path = report.path;
+    let path = readContext.path;
 
     for (let _static of this.statics) {
       data[_static.name] = _static.value;
     }
 
     for (let member of this.members) {
-      report.path = path + "." + member.name;
-      data[member.name] = member.type.read(buffer, address, report);
+      readContext.path = path + "." + member.name;
+      data[member.name] = member.type.read(buffer, address, readContext);
       address += member.type.SIZE;
     }
 
@@ -152,19 +152,19 @@ class Struct {
 
       let arr = [];
       for (let i = 0; i < arrayCount; i++) {
-        report.path = path + "." + array.name + "[" + i + "]";
+        readContext.path = path + "." + array.name + "[" + i + "]";
         arr.push(
-          array.type.read(buffer, arrayOffset + i * array.type.SIZE, report)
+          array.type.read(buffer, arrayOffset + i * array.type.SIZE, readContext)
         );
       }
 
       // Does double mark some fields that are only read once :/
-      report.markAreaAsRead(arrayOffset, arrayCount * array.type.SIZE);
+      readContext.markAreaAsRead(arrayOffset, arrayCount * array.type.SIZE);
 
       data[array.name] = arr;
 
-      if (report) {
-        report.arrays.push({
+      if (readContext) {
+        readContext.arrays.push({
           name: array.name,
           start: arrayOffset,
           count: arrayCount,
@@ -175,21 +175,21 @@ class Struct {
     }
 
     for (let reference of this.references) {
-      report.path = path + "." + reference.name;
+      readContext.path = path + "." + reference.name;
 
       try {
         let referenceOffset = data[reference.memberName];
         if (reference.relative) referenceOffset += offset;
 
-        if (referenceOffset in report.referenceOffsets) {
-          data[reference.name] = report.referenceOffsets[referenceOffset];
+        if (referenceOffset in readContext.referenceOffsets) {
+          data[reference.name] = readContext.referenceOffsets[referenceOffset];
         } else {
-          let ref = reference.type.read(buffer, referenceOffset, report);
+          let ref = reference.type.read(buffer, referenceOffset, readContext);
           data[reference.name] = ref;
-          report.referenceOffsets[referenceOffset] = ref;
+          readContext.referenceOffsets[referenceOffset] = ref;
         }
       } catch (e) {
-        report.addError(e.message);
+        readContext.addError(e.message);
       }
     }
 
@@ -197,15 +197,15 @@ class Struct {
       let rule = this.rules[i];
       let response = rule.rule(data, buffer);
       if (response) {
-        report.path = path + ":rule[" + i + "]";
-        report.addError(response);
+        readContext.path = path + ":rule[" + i + "]";
+        readContext.addError(response);
       }
     }
 
-    if (report) {
-      report.markAreaAsRead(offset, this.SIZE);
+    if (readContext) {
+      readContext.markAreaAsRead(offset, this.SIZE);
 
-      if (report.hideReferenceValues) {
+      if (readContext.hideReferenceValues) {
         // Remove all values that are only used as pointers or other data structure data to keep the result clean
         for (let array of this.arrays) {
           if (typeof array.offsetMemberName == 'string') delete data[array.offsetMemberName];
@@ -349,25 +349,30 @@ class Struct {
   }
 
   /**
-   * backward compatibility. Use .read instead! 
+   * backwards compatibility. Use .read instead! 
    */
   import() {
     this.read(...arguments);
   }
 
   /**
-   * Returns an report object. It will contain the extracted data as well as some statistics like how many bytes were read and what errors occoured.
-   * @param {*} buffer Buffer to read from
-   * @param {*} offset Offset byte to start reading from
-   * @returns {Report} The report
+   * backwards compatibility. Use .readContext instead! 
    */
   report(buffer, offset, options = { monitorUsage: true }) {
-    let report = new Report(buffer, options);
-    report.data = this.read(buffer, offset, report);
+    return this.readContext(...arguments);
+  }
 
-    report.checkForArrayCollisions();
-
-    return report;
+  /**
+   * Parses an givien buffer. Returns the read context. It will contain the extracted data as well as some statistics like how many bytes were read and what errors occoured.
+   * @param {*} buffer Buffer to read from
+   * @param {*} offset Offset byte to start reading from
+   * @returns {ReadContext} The ReadContext
+   */
+  readContext(buffer, offset, options) {
+    let context = new ReadContext(buffer, options);
+    context.data = this.read(buffer, offset, context);
+    context.checkForArrayCollisions();
+    return context;
   }
 
   /**

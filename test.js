@@ -58,7 +58,7 @@ function testImage() {
   data.writeInt8(0x61, 83);
 
   // Read image data
-  let out = Image.report(data, 0, { hideReferenceValues: true });
+  let out = Image.readContext(data, 0, { hideReferenceValues: true });
   if ("nameIndex" in out.data) return false;
 
   let jsonData = `{"magicNumber":604051865,"size":{"width":4,"height":4},"unused":null,"pixels":[{"color":{"r":5,"g":17,"b":1},"alpha":51},{"color":{"r":8,"g":41,"b":28},"alpha":78},{"color":{"r":12,"g":2,"b":23},"alpha":105},{"color":{"r":15,"g":27,"b":18},"alpha":132},{"color":{"r":18,"g":52,"b":13},"alpha":159},{"color":{"r":22,"g":13,"b":8},"alpha":186},{"color":{"r":25,"g":38,"b":3},"alpha":213},{"color":{"r":28,"g":62,"b":30},"alpha":240},{"color":{"r":0,"g":31,"b":25},"alpha":12},{"color":{"r":3,"g":48,"b":21},"alpha":39},{"color":{"r":7,"g":9,"b":16},"alpha":66},{"color":{"r":10,"g":34,"b":11},"alpha":93},{"color":{"r":13,"g":59,"b":6},"alpha":120},{"color":{"r":17,"g":20,"b":1},"alpha":147},{"color":{"r":20,"g":44,"b":28},"alpha":174},{"color":{"r":24,"g":5,"b":23},"alpha":201}],"name":"Tina"}`;
@@ -69,8 +69,8 @@ function testImage() {
   let buffer = ctx.buffer;
 
   // Read image data again from written buffer
-  let report = Image.report(buffer, 0, { hideReferenceValues: true });
-  let newJsonData = JSON.stringify(report.data);
+  ctx = Image.readContext(buffer, 0, { hideReferenceValues: true });
+  let newJsonData = JSON.stringify(ctx.data);
   return (newJsonData == jsonData);
 }
 
@@ -93,8 +93,8 @@ function testReadOverlappingArrays() {
     .addArray(Struct.TYPES.BYTE, "a", "aPos", "aLen")
     .addArray(Struct.TYPES.BYTE, "b", "bPos", "bLen");
 
-  let report = testStruct.report(buffer);
-  return report.errors.length == 1 && report.getUsage() == 52;
+  let ctx = testStruct.readContext(buffer);
+  return ctx.errors.length == 1 && ctx.getUsage() == 52;
 }
 
 function testRuleEqual() {
@@ -124,7 +124,7 @@ function testCharType() {
   let testStruct = new Struct()
     .addMember(Struct.TYPES.BYTE, "offset")
     .addMember(Struct.TYPES.BYTE, "length")
-    .addArray(Struct.TYPES.CHAR, "chars", "offset", "length")
+    .addArray(Struct.TYPES.CHAR, "chars", "offset", "length");
 
   let report = testStruct.report(buffer);
   return report.data.chars.join("") == "LEONIE";
@@ -146,11 +146,15 @@ function testRecursiveRead() {
   return (report.data.partner.exampleValue === report.data.partner.partner.partner.exampleValue);
 }
 
+function executeTest(name, test) {
+  console.log(name, test() ? "\x1b[32mSuccess!" : "\x1b[31mFailed!", "\x1b[37m");
+}
+
 console.log("--- Reading tests ---")
-console.log("Overlapping arrays:", testReadOverlappingArrays());
-console.log("Equal rule:", testRuleEqual());
-console.log("Character type:", testCharType());
-console.log("Recursive:", testRecursiveRead());
+executeTest("Equal rule", testRuleEqual);
+executeTest("Character type:", testCharType);
+executeTest("Recursive:", testRecursiveRead);
+executeTest("Overlapping Arrays:", testReadOverlappingArrays);
 
 console.log("--- Common ---");
-console.log("Image:", testImage());
+executeTest("Image:", testImage);

@@ -1,6 +1,6 @@
 interface ValueType<T> {
   read(buffer: BufferSource, offset: number): T
-  write?(value: any, context: WriteContext, offset: number)
+  write?(value: any, context: WriteContext, offset: number): void
   SIZE: number
 }
 
@@ -35,7 +35,7 @@ declare class Struct implements ValueType<Struct> {
   addArray(type: ValueType<any>, name: string, offset: string | number, count: string | number, relative?: boolean): this
   
   /**
-   * Adds a reference. References will appear as own members in the out data. Recursive references are allowed and will produce an circular structure.
+   * Adds a reference. This marks a member as pointer. References will appear as own members in the out data. Recursive references are allowed and will produce an circular structure.
    * @param type Type of the reference
    * @param name Name of the new data member
    * @param offset Number or name of member containing the offset
@@ -62,23 +62,24 @@ declare class Struct implements ValueType<Struct> {
    * @param offset Offset byte to start reading from
    * @returns {Object} The data that was read
    */
-  read(buffer: BufferSource, offset: number, report?: Report): any
+  read(buffer: BufferSource, offset: number, readContext?: ReadContext): any
 
   /**
-   * Returns an report object. It will contain the extracted data as well as some statistics like how many bytes were read and what errors occoured.
+   * Parses an givien buffer. Returns the read context. It will contain the extracted data as well as some statistics like how many bytes were read and what errors occoured.
    * @param buffer Buffer to read from
    * @param offset Offset byte to start reading from
+   * @param options Parsing options
    * @returns The report
    */
-  report(buffer: BufferSource, offset: number, options: ReportOptions): Report
+  readContext(buffer: BufferSource, offset: number, options: ReadOptions): ReadContext
 
   /**
-   * Writes a struct to the buffer. If no buffer is given, a new one is created
-   * @param content Object to parse into the buffer
-   * @param buffer Target buffer
-   * @param offset Offset in target buffer
+   * Writes data to an buffer, using this structure
+   * @param any Data holding object
+   * @param WriteContext Internally used for the write process. Will create automatically a new one if none is given
+   * @param number Offset, for start writing
    */
-  write(content: any, buffer?: BufferSource, offset?: number): BufferSource
+  write(object: object, context?: WriteContext = null, offset?: number = 1): WriteContext
 
   /**
    * Validates a structure
@@ -125,7 +126,7 @@ declare class Struct implements ValueType<Struct> {
     /**
      * Unsigned 4 byte little-endian integer
      */
-    UINT: ValueType<Number>
+    UINT: ValueType<number>
 
     /**
      * Unsigned 4 byte big-endian Integer
@@ -193,16 +194,25 @@ declare class Struct implements ValueType<Struct> {
   }
 }
 
-type ReportOptions = {
-  monitorUsage: boolean
+type ReadOptions = {
+
+  /**
+   * Calculate how much of the source buffer was read
+   */
+  monitorUsage?: boolean
+
+  /**
+   * Remove reference fields (array offset, array length and reference offset fields) from output data.
+   */
+  hideReferenceValues?: boolean
 }
 
 /**
  * Stores the result of an import/read.
  */
-declare class Report {
+declare class ReadContext {
 
-  constructor(buffer: BufferSource, options: ReportOptions)
+  constructor(buffer: BufferSource, options: ReadOptions)
 
   /**
    * Returns a formatted string containing the reports result.
@@ -215,10 +225,34 @@ declare class Report {
   getUsage(): number
 
   /**
+   * Returns true if the imported data had errors
+   */
+  hasErrors(): boolean
+
+  /**
    * Raw data read
    */
-  data: any
+  data: object
   
+}
+
+type WriteOptions = {
+
+  /**
+   * Output buffer size in bytes
+   */
+  bufferSize?: number
+}
+
+declare class WriteContext {
+
+  /**
+   * Output buffer
+   */
+  public buffer: Buffer;
+
+  constructor(options: WriteOptions)
+
 }
 
 export = Struct;

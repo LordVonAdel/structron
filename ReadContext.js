@@ -6,9 +6,9 @@
  * Used as context for the current import.
  */
 
-class Report {
+class ReadContext {
 
-  constructor(buffer, options) {
+  constructor(buffer, options = {}) {
     this.buffer = buffer;
     
     this.monitorUsage = Boolean(options.monitorUsage);
@@ -100,6 +100,10 @@ class Report {
     return number;
   }
 
+  hasErrors() {
+    return this.errors.length > 0;
+  }
+
 }
 
-module.exports = Report;
+module.exports = ReadContext;

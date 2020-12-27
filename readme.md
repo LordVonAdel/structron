@@ -39,9 +39,9 @@ const rgb565 = {
   read(buffer, offset) {
     let short = buffer.readUInt16LE(offset);
     return {
-      r: short & 0b1111100000000000 >> 11,
-      g: short & 0b0000011111100000 >> 5,
-      b: short & 0b0000000000011111
+      r: (short & 0b1111100000000000) >> 11,
+      g: (short & 0b0000011111100000) >> 5,
+      b: (short & 0b0000000000011111)
     }
   },
   SIZE: 2 // Size in bytes
@@ -66,10 +66,16 @@ const Image = new Struct()
 // --- And now import our image ---
 const data = Buffer.from("mRkBJAQAAAAEAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAhKjM8RU5XYGlye4SNlp+osbrDzNXe5/D5AwwVHicwOUJLVF1mb3iBipOcpa63wMlUaW5hAA==", "base64");
 
-let image = Image.report(data);
-console.log(image.data);
+let ctx = Image.readContext(data);
+
+// Check for errors in the input data
+if (!ctx.hasErrors()) {
+
+  // Log the result
+  console.log(ctx.data);
+}
 ```
-`image.data` will then look like this:
+`ctx.data` will then look like this:
 ```json
 {
   "magicNumber": 604051865,
@@ -79,22 +85,22 @@ console.log(image.data);
   "nameIndex": 80,
   "unused": null,
   "pixels": [
-    { "color": { "r": 1,  "g": 33, "b": 1 },  "alpha": 51 },
-    { "color": { "r": 28, "g": 60, "b": 28 }, "alpha": 78 },
-    { "color": { "r": 23, "g": 23, "b": 23 }, "alpha": 105 },
-    { "color": { "r": 18, "g": 50, "b": 18 }, "alpha": 132 },
-    { "color": { "r": 13, "g": 13, "b": 13 }, "alpha": 159 },
-    { "color": { "r": 8,  "g": 40, "b": 8 },  "alpha": 186 },
-    { "color": { "r": 3,  "g": 3,  "b": 3 },  "alpha": 213 },
-    { "color": { "r": 30, "g": 30, "b": 30 }, "alpha": 240 },
-    { "color": { "r": 25, "g": 57, "b": 25 }, "alpha": 12 },
-    { "color": { "r": 21, "g": 21, "b": 21 }, "alpha": 39 },
-    { "color": { "r": 16, "g": 48, "b": 16 }, "alpha": 66 },
-    { "color": { "r": 11, "g": 11, "b": 11 }, "alpha": 93 },
-    { "color": { "r": 6,  "g": 38, "b": 6 },  "alpha": 120 },
-    { "color": { "r": 1,  "g": 1,  "b": 1 },  "alpha": 147 },
-    { "color": { "r": 28, "g": 28, "b": 28 }, "alpha": 174 },
-    { "color": { "r": 23, "g": 55, "b": 23 }, "alpha": 20 1}
+    { "color": { "r": 5,  "g": 17, "b": 1 },  "alpha": 51 },
+    { "color": { "r": 8,  "g": 41, "b": 28 }, "alpha": 78 },
+    { "color": { "r": 12, "g": 2,  "b": 23 }, "alpha": 105 },
+    { "color": { "r": 15, "g": 27, "b": 18 }, "alpha": 132 },
+    { "color": { "r": 18, "g": 52, "b": 13 }, "alpha": 159 },
+    { "color": { "r": 22, "g": 13, "b": 8 },  "alpha": 186 },
+    { "color": { "r": 25, "g": 38, "b": 3 },  "alpha": 213 },
+    { "color": { "r": 28, "g": 62, "b": 30 }, "alpha": 240 },
+    { "color": { "r": 0,  "g": 31, "b": 25 }, "alpha": 12 },
+    { "color": { "r": 3,  "g": 48, "b": 21 }, "alpha": 39 },
+    { "color": { "r": 7,  "g": 9,  "b": 16 }, "alpha": 66 },
+    { "color": { "r": 10, "g": 34, "b": 11 }, "alpha": 93 },
+    { "color": { "r": 13, "g": 59, "b": 6 },  "alpha": 120 },
+    { "color": { "r": 17, "g": 20, "b": 1 },  "alpha": 147 },
+    { "color": { "r": 20, "g": 44, "b": 28 }, "alpha": 174 },
+    { "color": { "r": 24, "g": 5,  "b": 23 }, "alpha": 201 }
   ],
   "name": "Tina"
 }
@@ -104,7 +110,7 @@ console.log(image.data);
 ### `struct.read(buffer, offset)`
 Reads data from a buffer from a specific address on. Returns the data as object.
 
-### `struct.report(buffer, offset, options)`
+### `struct.readContext(buffer, offset, options)`
 Reads data from a buffer from a specific address on. Returns an object containing additional data about the import like how many bytes were actually read. The returned object also holds the imported data.
 
 `options.monitorUsage`: Keep track of what bytes were read.
@@ -135,15 +141,21 @@ Circular references are possible.
 
 `name` is the name of the member that will be added to the output object.
 
-`index` is the start address of the elementto load. If a string is given, it will read the value from another member with that name.
+`index` is the start address of the element to load. If a string is given, it will read the value from another member with that name.
 
 When `relative` is set to true, the index is relative to the start of the parent struct.
 
 ### `struct.addRule(rule)`
 Adds a rule. A rule is like a test. If it is not successful, an error will be added to the report.
 
+### `struct.addStatic(name, value)`
+Adds a static value. These will show in the output data, but will not be written to buffers when writing.
+
+### `write(object, context, offset)`
+Writes a struct to a buffer. Returns a new context if none is given. 
+
 ## Inbuilt Types
-These inbuilt types are accesiable with `Structron.TYPES.`
+These inbuilt types are accessible with `Structron.TYPES.`
 
 ### `INT`
 4 byte signed little-endian Integer
