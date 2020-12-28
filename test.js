@@ -93,7 +93,7 @@ function testReadOverlappingArrays() {
     .addArray(Struct.TYPES.BYTE, "a", "aPos", "aLen")
     .addArray(Struct.TYPES.BYTE, "b", "bPos", "bLen");
 
-  let ctx = testStruct.readContext(buffer);
+  let ctx = testStruct.readContext(buffer, 0, { monitorUsage: true });
   return ctx.errors.length == 1 && ctx.getUsage() == 52;
 }
 
