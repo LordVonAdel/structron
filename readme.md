@@ -8,7 +8,7 @@ npm i structron
 ```
 
 ## Example
-Example of reading a custom image format with the following structure:
+Example of a custom image format with the following structure:
 ```
 header:
   int magicNumber   (Magic number of the file)
@@ -23,7 +23,7 @@ pixel:
   byte alpha        (Opacity)
 ```
 
-Reading with structron:
+Preparing the structure:
 ```js
 const Struct = require('structron');
 
@@ -62,8 +62,10 @@ const Image = new Struct()
   .addReference(Struct.TYPES.NULL_TERMINATED_STRING('ASCII'), "name", "nameIndex")
   .addArray(Pixel, "pixels", "pixelOffset", "pixelNumber")
   .addRule(Struct.RULES.EQUAL("magicNumber", 604051865));
+```
 
-// --- And now import our image ---
+Reading with structron:
+```js
 const data = Buffer.from("mRkBJAQAAAAEAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAhKjM8RU5XYGlye4SNlp+osbrDzNXe5/D5AwwVHicwOUJLVF1mb3iBipOcpa63wMlUaW5hAA==", "base64");
 
 let ctx = Image.readContext(data);
@@ -104,6 +106,20 @@ if (!ctx.hasErrors()) {
   ],
   "name": "Tina"
 }
+```
+
+Writing with structron:
+```js
+let object = {
+  magicNumber: 604051865,
+  size: { width: 1, height: 1},
+  pixels: [{color: {r: 2, g: 3, b: 2}, alpha: 255}],
+  name: "One Pixel"
+};
+
+let ctx = Image.write(object);
+// ctx.buffer contains the exported data!
+ctx.buffer().toString("base64"); // => "mRkBJAEAAAABAAAAIAAAAAEAAAAjAAAAAAAAAAAAAABiEP9PbmUgUGl4ZWwA"
 ```
 
 ## Methods
@@ -151,7 +167,7 @@ Adds a rule. A rule is like a test. If it is not successful, an error will be ad
 ### `struct.addStatic(name, value)`
 Adds a static value. These will show in the output data, but will not be written to buffers when writing.
 
-### `write(object, context, offset)`
+### `struct.write(object, context, offset)`
 Writes a struct to a buffer. Returns a new context if none is given. 
 
 ## Inbuilt Types

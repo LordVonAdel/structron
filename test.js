@@ -74,6 +74,52 @@ function testImage() {
   return (newJsonData == jsonData);
 }
 
+function testWriteOnePixel() {
+  const Dimensions = new Struct()
+    .addMember(Struct.TYPES.INT, "width")
+    .addMember(Struct.TYPES.INT, "height");
+
+  const rgb565 = {
+    read(buffer, offset) {
+      let short = buffer.readUInt16LE(offset);
+      return {
+        r: (short & 0b1111100000000000) >> 11,
+        g: (short & 0b0000011111100000) >> 5,
+        b: (short & 0b0000000000011111)
+      }
+    },
+    write(value, context, offset) {
+      let val = (value.r << 11) | (value.g << 5) | value.b;
+      context.buffer.writeUInt16LE(val, offset);
+    },
+    SIZE: 2
+  };
+
+  const Pixel = new Struct()
+    .addMember(rgb565, "color")
+    .addMember(Struct.TYPES.BYTE, "alpha");
+
+  const Image = new Struct()
+    .addMember(Struct.TYPES.INT, "magicNumber")
+    .addMember(Dimensions, "size")
+    .addMember(Struct.TYPES.INT, "pixelOffset")
+    .addMember(Struct.TYPES.INT, "pixelNumber")
+    .addMember(Struct.TYPES.INT, "nameIndex")
+    .addMember(Struct.TYPES.SKIP(8), "unused")
+    .addReference(Struct.TYPES.NULL_TERMINATED_STRING(), "name", "nameIndex")
+    .addArray(Pixel, "pixels", "pixelOffset", "pixelNumber");
+
+  let object = {
+    magicNumber: 604051865,
+    size: { width: 1, height: 1},
+    pixels: [{color: {r: 2, g: 3, b: 2}, alpha: 255}],
+    name: "One Pixel"
+  };
+
+  let ctx = Image.write(object);
+  return ctx.buffer.toString("base64") == "mRkBJAEAAAABAAAAIAAAAAEAAAAjAAAAAAAAAAAAAABiEP9PbmUgUGl4ZWwA";
+}
+
 /**
  * Tests overlapping arrays and usage
  */
@@ -155,6 +201,9 @@ executeTest("Equal rule", testRuleEqual);
 executeTest("Character type:", testCharType);
 executeTest("Recursive:", testRecursiveRead);
 executeTest("Overlapping Arrays:", testReadOverlappingArrays);
+
+console.log("--- Writing tests ---");
+executeTest("One pixel Image:", testWriteOnePixel);
 
 console.log("--- Common ---");
 executeTest("Image:", testImage);
