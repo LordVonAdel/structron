@@ -1,5 +1,5 @@
 # Structron
-Structron is a reader for binary data. It parses buffers from in code defined models and returns the result as object.
+Structron is a reader and writer for binary data. It parses buffers from in code defined models and returns the result as object, or creates buffers from objects.
 
 ## Installation
 Install using [npm](https://www.npmjs.com/):

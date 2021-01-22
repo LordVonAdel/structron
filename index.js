@@ -56,7 +56,7 @@ class Struct {
 
     if (typeof countMemberName == 'number') {
       let value = countMemberName;
-      countMemberName = "_" + name + "_offset";
+      countMemberName = "_" + name + "_count";
       this.addStatic(countMemberName, value);
     }
 
