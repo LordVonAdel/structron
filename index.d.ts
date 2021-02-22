@@ -117,6 +117,7 @@ declare class Struct implements ValueType<Struct> {
      * Signed 4 byte little-endian Integer 
      */
     INT: ValueType<number>
+    INT_LE: ValueType<number>
 
     /**
      * Signed 4 byte big-endian Integer
@@ -127,6 +128,7 @@ declare class Struct implements ValueType<Struct> {
      * Unsigned 4 byte little-endian integer
      */
     UINT: ValueType<number>
+    UINT_LE: ValueType<number>
 
     /**
      * Unsigned 4 byte big-endian Integer
@@ -137,6 +139,7 @@ declare class Struct implements ValueType<Struct> {
      * Signed 16 bit little-endian integer
      */
     SHORT: ValueType<number>
+    SHORT_LE: ValueType<number>
 
     /**
      * Signed 16 bit big-endian integer
@@ -147,6 +150,7 @@ declare class Struct implements ValueType<Struct> {
      * Unsigned 16 bit little-endian integer
      */
     USHORT: ValueType<number>
+    USHORT_LE: ValueType<number>
 
     /**
      * Unsigned 16 bit big-endian integer
@@ -157,6 +161,7 @@ declare class Struct implements ValueType<Struct> {
      * 4 Byte little-endian float
      */
     FLOAT: ValueType<number>
+    FLOAT_LE: ValueType<number>
 
     /**
      * 4 Byte big-endian float

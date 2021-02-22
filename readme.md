@@ -173,25 +173,25 @@ Writes a struct to a buffer. Returns a new context if none is given.
 ## Inbuilt Types
 These inbuilt types are accessible with `Structron.TYPES.`
 
-### `INT`
+### `INT_LE`
 4 byte signed little-endian Integer
 
 ### `INT_BE`
 4 byte signed big-endian Integer
 
-### `UINT`
+### `UINT_LE`
 4 byte unsigned little-endian Integer
 
 ### `UINT_BE`
 2 byte unsigned big-endian Integer
 
-### `SHORT`
+### `SHORT_LE`
 2 byte signed little-endian Integer
 
 ### `SHORT_BE`
 2 byte signed big-endian Integer
 
-### `USHORT`
+### `USHORT_LE`
 2 byte signed little-endian Integer
 
 ### `USHORT_BE`
@@ -200,7 +200,7 @@ These inbuilt types are accessible with `Structron.TYPES.`
 ### `BYTE`
 Unsigned 1 byte
 
-### `FLOAT`
+### `FLOAT_LE`
 4 byte little-endian Float
 
 ### `FLOAT_BE`

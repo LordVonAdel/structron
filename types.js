@@ -6,7 +6,7 @@ module.exports = {
   /* 
    * Signed 4 byte LE Integer 
    */
-  INT: {
+  INT_LE: {
     read(buffer, offset) {
       return buffer.readInt32LE(offset);
     },
@@ -32,7 +32,7 @@ module.exports = {
   /**
    * Unsigned 4 byte LE integer
    */
-  UINT: {
+  UINT_LE: {
     read(buffer, offset) {
       return buffer.readUInt32LE(offset);
     },
@@ -59,7 +59,7 @@ module.exports = {
   /**
    * Signed 16 bit LE integer
    */
-  SHORT: {
+  SHORT_LE: {
     read(buffer, offset) {
       return buffer.readInt16LE(offset);
     },
@@ -85,7 +85,7 @@ module.exports = {
   /**
    * Unsigned 16 bit LE integer
    */
-  USHORT: {
+  USHORT_LE: {
     read(buffer, offset) {
       return buffer.readUInt16LE(offset);
     },
@@ -111,7 +111,7 @@ module.exports = {
   /**
    * 4 Byte LE float
    */
-  FLOAT: {
+  FLOAT_LE: {
     read(buffer, offset) {
       return buffer.readFloatLE(offset);
     },
@@ -222,3 +222,10 @@ module.exports = {
     }
   }
 }
+
+// Aliases
+module.exports.INT = module.exports.INT_LE;
+module.exports.UINT = module.exports.UINT_LE;
+module.exports.SHORT = module.exports.SHORT_LE;
+module.exports.USHORT = module.exports.USHORT_LE;
+module.exports.FLOAT = module.exports.INT_LE;
