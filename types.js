@@ -228,4 +228,4 @@ module.exports.INT = module.exports.INT_LE;
 module.exports.UINT = module.exports.UINT_LE;
 module.exports.SHORT = module.exports.SHORT_LE;
 module.exports.USHORT = module.exports.USHORT_LE;
-module.exports.FLOAT = module.exports.INT_LE;
+module.exports.FLOAT = module.exports.FLOAT_LE;
