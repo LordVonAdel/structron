@@ -129,9 +129,35 @@ module.exports = {
       return buffer.readFloatBE(offset);
     },
     write(value, context, offset) {
-      context.buffer.writeFLoatBE(value, offset);
+      context.buffer.writeFloatBE(value, offset);
     },
     SIZE: 4
+  },
+
+  /**
+   * 8 Byte LE double
+   */
+  DOUBLE_LE: {
+    read(buffer, offset) {
+      return buffer.readDoubleLE(offset);
+    },
+    write(value, context, offset) {
+      context.buffer.writeDoubleLE(value, offset);
+    },
+    SIZE: 8
+  },
+
+  /**
+   * 8 Byte BE double
+   */
+  DOUBLE_BE: {
+    read(buffer, offset) {
+      return buffer.readDoubleBE(offset);
+    },
+    write(value, context, offset) {
+      context.buffer.writeDoubleBE(value, offset);
+    },
+    SIZE: 8
   },
 
   /**
@@ -229,3 +255,4 @@ module.exports.UINT = module.exports.UINT_LE;
 module.exports.SHORT = module.exports.SHORT_LE;
 module.exports.USHORT = module.exports.USHORT_LE;
 module.exports.FLOAT = module.exports.FLOAT_LE;
+module.exports.DOUBLE = module.exports.DOUBLE_LE;
