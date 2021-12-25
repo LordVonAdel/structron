@@ -206,6 +206,12 @@ Unsigned 1 byte
 ### `FLOAT_BE`
 4 byte big-endian Float
 
+### `DOUBLE_LE`
+8 byte little-endian Double
+
+### `DOUBLE_BE`
+8 byte big-endian Double
+
 ### `CHAR`
 1 ASCII character
 
